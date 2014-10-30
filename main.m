@@ -7,6 +7,13 @@ img = imread(originalImage);
 figure
 imshow(img)
 
+[fimg labels modes regsize grad conf] = edison_wrapper(img,@RGB2Luv,...
+       'SpatialBandWidth',8,'RangeBandWidth',4,...
+       'MinimumRegionArea',10000);
+
+figure
+imshow(Luv2RGB(fimg));
+
 imgGray = rgb2gray(img);
 figure
 imshow(imgGray)
