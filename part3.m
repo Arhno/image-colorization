@@ -11,10 +11,8 @@ imgGray = rgb2gray(img);
        'MinimumRegionArea',10000); 
 
 %Extracting Image Features
-%gray_features = get_features(imgGray);
-%RGB_features = get_features(imgGray);
-load '/Users/priyanka/Documents/MATLAB/image-colorization-master/gray_features.mat'
-load '/Users/priyanka/Documents/MATLAB/image-colorization-master/RGB_features.mat'
+gray_features = get_features(imgGray);
+RGB_features = get_features(imgGray);
 [n2,m2,k] = size(gray_features);
 
 tic;
