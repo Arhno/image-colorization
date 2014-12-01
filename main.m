@@ -1,6 +1,6 @@
 clc ; close all ; clear ;
 
-originalImage = 'Lake.jpg';
+originalImage = 'Elephant_ref.jpg';
 
 img = imread(originalImage);
 
@@ -35,12 +35,12 @@ tic;
 imgFeatures = get_features(gr);
 toc
 
-NTrees = 50;
-RF = createRF( imgFeatures, flabels, NTrees);
+NTrees = 1;
+[RF, knn] = createRF( imgFeatures, flabels, NTrees);
 
 %TEST ON GRAY IMAGE
 
-imgTest = imread('Lake2.jpg');
+imgTest = imread('Elephant_ref.jpg');
 imgTest = rgb2gray(imgTest);
 figure;
 imshow(imgTest)
@@ -51,15 +51,38 @@ imgFeaturesTest = get_features(imgTest);
 tic;
 Y = testRF( RF, imgFeaturesTest );
 toc
+% tic
+% Yknn = testKnn( knn, imgFeaturesTest );
+% toc
 
 Yresized = reshape(Y,size(imgTest));
-Yimg = zeros(size(imgTest));
+Yimg = zeros(size(fimg));
 
 for i =1:size(imgTest,1)
    for j = 1:size(imgTest,2)
-       Yimg(i,j) = str2num(Yresized{i,j});
+       Yimg(i,j, :) = modes(:,str2num(Yresized{i,j})+1);
    end
 end
+
+
+figure
+imshow(Luv2RGB(Yimg));
+
+
+% Yresized = reshape(Yknn,size(imgTest));
+% Yimg = zeros(size(fimg));
+% 
+% for i =1:size(imgTest,1)
+%    for j = 1:size(imgTest,2)
+%        Yimg(i,j, :) = modes(:,Yresized(i,j)+1);
+%    end
+% end
+% 
+% 
+% figure
+% imshow(Luv2RGB(Yimg));
+
+
 
 % figure
 % imshow(conf, [0,1])

@@ -1,14 +1,15 @@
-function [ RF ] = createRF( imgFeatures, labels, NTrees )
+function [ RF, knn ] = createRF( imgFeatures, labels, NTrees )
 
 %reshaping featureImage into a 2D array:
 featureVector = reshape(imgFeatures,[],size(imgFeatures,3),1);
 labels = labels(:);
 
-featuresSubSample = featureVector(1:5:end, :);
-labelsSubSample = labels(1:5:end);
+featuresSubSample = featureVector(1:1:end, :);
+labelsSubSample = labels(1:1:end);
 
 RF = TreeBagger(NTrees, featuresSubSample, labelsSubSample,'OOBPred','On',  'NPrint', 1);
 
+knn = ClassificationKNN.fit(featuresSubSample,labelsSubSample,'NumNeighbors', 11);
 
 oobErrorBaggedEnsemble = oobError(RF);
 plot(oobErrorBaggedEnsemble)
