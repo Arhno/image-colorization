@@ -8,13 +8,13 @@ function [ features ] = get_features( luminance_img )
     
     % LM filter bank
     filters = makeLMfilters();
-    nb_filters = size(filters,3)
+    nb_filters = size(filters,3);
     
     % size of the DCT window
     K = 5;
     
     % Initialize the feature matrix
-    features = zeros(h,w,nb_filters+K*K);
+    features = zeros(h,w,nb_filters);%+ K*K
     
     % Compute the LM
     for k=1:nb_filters

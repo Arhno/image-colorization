@@ -7,7 +7,7 @@ img = imread(originalImage);
 figure
 imshow(img)
 
-[fimg flabels modes regsize grad conf] = edison_wrapper(img,@RGB2Luv,...
+[fimg, flabels, modes, regsize, grad, conf] = edison_wrapper(img,@RGB2Luv,...
        'SpatialBandWidth',8,'RangeBandWidth',4,...
        'MinimumRegionArea',10000);
 
@@ -32,8 +32,35 @@ imshow(imgSeg)
 
 gr = rgb2gray(img);
 tic;
-t = get_features(gr);
+imgFeatures = get_features(gr);
 toc
+
+NTrees = 50;
+RF = createRF( imgFeatures, flabels, NTrees);
+
+%TEST ON GRAY IMAGE
+
+imgTest = imread('Lake2.jpg');
+imgTest = rgb2gray(imgTest);
+figure;
+imshow(imgTest)
+title('image to be colorized')
+
+imgFeaturesTest = get_features(imgTest);
+
+tic;
+Y = testRF( RF, imgFeaturesTest );
+toc
+
+Yresized = reshape(Y,size(imgTest));
+Yimg = zeros(size(imgTest));
+
+for i =1:size(imgTest,1)
+   for j = 1:size(imgTest,2)
+       Yimg(i,j) = str2num(Yresized{i,j});
+   end
+end
+
 % figure
 % imshow(conf, [0,1])
 % 
