@@ -35,8 +35,8 @@ tic;
 imgFeatures = get_features(gr);
 toc
 
-NTrees = 1;
-[RF, knn] = createRF( imgFeatures, flabels, NTrees);
+NTrees = 5;
+[RF, knn, V] = createRF( imgFeatures, flabels, NTrees);
 
 %TEST ON GRAY IMAGE
 
@@ -49,7 +49,7 @@ title('image to be colorized')
 imgFeaturesTest = get_features(imgTest);
 
 tic;
-Y = testRF( RF, imgFeaturesTest );
+Y = testRF( RF, imgFeaturesTest, V );
 toc
 % tic
 % Yknn = testKnn( knn, imgFeaturesTest );
