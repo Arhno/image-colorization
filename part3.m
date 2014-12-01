@@ -1,8 +1,9 @@
 clc ; close all ; clear ;
 
 img = imread('Lake.jpg');
+img2 = imread('imageslake.jpg');
 imgGray = rgb2gray(img);
-%img = (rgb2ycbcr(img));
+imgGray2 = rgb2gray(img2);
 [n,m,p] = size(img);
 
 %Segmentation of the image using Mean Shift
@@ -10,8 +11,12 @@ imgGray = rgb2gray(img);
        'SpatialBandWidth',8,'RangeBandWidth',4,...
        'MinimumRegionArea',10000); 
 
+[fimg2 labels2 modes2 regsize2 grad2 conf2] = edison_wrapper(img2,@RGB2Luv,...
+   'SpatialBandWidth',8,'RangeBandWidth',4,...
+   'MinimumRegionArea',10000); 
+
 %Extracting Image Features
-gray_features = get_features(imgGray);
+gray_features = get_features(imgGray2);
 RGB_features = get_features(imgGray);
 [n2,m2,k] = size(gray_features);
 
@@ -20,7 +25,6 @@ tic;
 %Sorting the RGB image features based on segments
 number_segments = size(regsize);
 RGB_sorted_features = zeros(number_segments,max(regsize),k+2);
-
 count = ones(1,number_segments(2));
 for i=1:1:n
     for j=1:1:m
@@ -31,19 +35,31 @@ for i=1:1:n
     end
 end
 
+number_segments = size(regsize2);
+count = ones(1,number_segments(2));
+gray_sorted_features = zeros(number_segments,max(regsize2),k+2);
+for i=1:1:n2
+    for j=1:1:m2
+        gray_sorted_features(labels2(i,j)+1,count(labels2(i,j)+1),1:k) = gray_features(i,j,1:k); 
+        gray_sorted_features(labels2(i,j)+1,count(labels2(i,j)+1),k+1) = i;
+        gray_sorted_features(labels2(i,j)+1,count(labels2(i,j)+1),k+2) = j;
+        count(labels2(i,j)+1) = count(labels2(i,j)+1) + 1;
+    end
+end
+
 %Calculation of nearest neighbours
-nearest_neigh = zeros(n,m,3);
+nearest_neigh = zeros(n2,m2,3);
 nearest_neigh(:,:,3) = bitmax;
-[size1 size2] = size(regsize);
+[size1 size2] = size(regsize2);
 
 for i=1:1:size2
     disp(i);
-    count = regsize(i);
+    count = regsize2(i);
     limit = ceil(count*0.01);
     r = randi([1 count],1,limit);
     for j=1:1:limit
-        r1 = RGB_sorted_features(i,r(j),k+1);
-        r2 = RGB_sorted_features(i,r(j),k+2);
+        r1 = gray_sorted_features(i,r(j),k+1);
+        r2 = gray_sorted_features(i,r(j),k+2);
         label = labels(r1,r2) + 1;
         number = regsize(label);
         distance = zeros(1,number);
@@ -63,21 +79,16 @@ for i=1:1:size2
 end
 
 %Calculation of weights
-weights = zeros(n,m);
-for i=4:1:765
-    for j=4:1:1021
+weights = zeros(n2,m2);
+for i=4:1:(n2-4)
+    for j=4:1:(m2-4)
        a = exp(-double(nearest_neigh(i,j,3)));
-       b = ((sum(sum(exp(-nearest_neigh(i-3:i+3,j-3:j+3,3)),1),2)));
-       if b~=0
-            weights(i,j) = double(a)/b;
-       else
-           weights(i,j) = double(0);
-       end
+       b = ((sum(sum(exp(-nearest_neigh(i-3:i+3,j-3:j+3,3)),1),2))) + realmin;
     end
 end
 
-for i=1:1:n
-    for j=1:1:m
+for i=1:1:n2
+    for j=1:1:m2
         if(nearest_neigh(i,j,1)==0)
             nearest_neigh(i,j,1) = 20;
             nearest_neigh(i,j,2) = 20;
@@ -93,8 +104,8 @@ imgGrayR = rgb2gray(img);
 imgGrayG = imgGrayR;
 imgGrayB = imgGrayR;
 
-for i=4:1:764
-    for j=4:1:1020
+for i=4:1:(n2-4)
+    for j=4:1:(m2-4)
         label = labels(i,j) + 1;
         label = repmat(label,1,7);
        
@@ -104,7 +115,9 @@ for i=4:1:764
         d = zeros(7,7,3);
         for X=1:1:7
             for Y=1:1:7
-                d(X,Y,:) = img(a(X,Y)-(X-4),b(X,Y)-(Y-4),:);
+                if (a(X,Y)-(X-4)>0) && (b(X,Y)-(Y-4)>0)
+                    d(X,Y,:) = img(a(X,Y)-(X-4),b(X,Y)-(Y-4),:);
+                end
             end
         end
         imgGrayR(i,j) = sum(sum(c.*double(bsxfun(@eq,labels(i-3:1:i+3,j-3:1:j+3),label-1)).*double(weights(i-3:1:i+3,j-3:1:j+3)).*double(d(1:1:7,1:1:7,1)),1),2);
