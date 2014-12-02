@@ -17,7 +17,7 @@ function [] = colorization(Yresized, modes)
     %Segmentation of the image using Mean Shift
     [fimg labels modes2 regsize grad conf] = edison_wrapper(img,@RGB2Luv,...
            'SpatialBandWidth',8,'RangeBandWidth',4,...
-           'MinimumRegionArea',1000); 
+           'MinimumRegionArea',10000); 
 
     %I am using yresized and modes from the main   
     labels2 = cellfun(@str2num,Yresized);
