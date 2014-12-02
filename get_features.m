@@ -6,35 +6,33 @@ function [ features ] = get_features( luminance_img )
     luminance_img = im2double(luminance_img);
     [h,w] = size(luminance_img);
     
-%     % LM filter bank
-%     filters = makeLMfilters();
-%     nb_filters = size(filters,3);
-%     
-%     % size of the DCT window
-%     K = 5;
-%     
-%     % Initialize the feature matrix
-%     features = zeros(h,w,2*nb_filters+1);%+ K*K
-%     
-%     features(:,:,1) = luminance_img;
-%     
-%     % Compute the LM
-%     for k=1:nb_filters
-%         features(:,:,k+1) = ...
-%             imfilter(luminance_img, filters(:,:,k), 'symmetric');
-%     end
-%     
-%     % Compute the "variance of" LM
-%     Ave = 11;
-%     for k=1:nb_filters
-%         m = imfilter(features(:,:,k), ones(Ave)/(Ave*Ave));
-%         dif = (features(:,:,k) - m).^2;
-%         features(:,:,nb_filters+k) = ...
-%             sqrt(imfilter(dif, ones(Ave)/(Ave*Ave)));
-%     end
+    % LM filter bank
+    filters = makeLMfilters();
+    nb_filters = size(filters,3);
     
+    % size of the DCT window
     K = 5;
-    features = zeros(h,w,K*K);
+    
+    % Initialize the feature matrix
+    features = zeros(h,w,2*nb_filters+1+ K*K);
+    
+    features(:,:,1) = luminance_img;
+    
+    % Compute the LM
+    for k=1:nb_filters
+        features(:,:,k+1) = ...
+            imfilter(luminance_img, filters(:,:,k), 'symmetric');
+    end
+    
+    % Compute the "variance of" LM
+    Ave = 11;
+    for k=1:nb_filters
+        m = imfilter(features(:,:,k), ones(Ave)/(Ave*Ave));
+        dif = (features(:,:,k) - m).^2;
+        features(:,:,nb_filters+k) = ...
+            sqrt(imfilter(dif, ones(Ave)/(Ave*Ave)));
+    end
+    
     % Compute the DCT feature
     r = floor(K/2);
     % create border
@@ -55,7 +53,7 @@ function [ features ] = get_features( luminance_img )
             y = i+r;
             roi = extended((y-r):(y+r),(x-r):(x+r));
             dct_coeff = dct2(roi);
-            features(i,j,:) = dct_coeff(:)';
+            features(i,j,(2*nb_filters+2):end) = dct_coeff(:)';
         end
     end
 end

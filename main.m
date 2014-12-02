@@ -1,18 +1,20 @@
 clc ; close all ; clear ;
 
-originalImage = 'Elephant_ref.jpg';
+% originalImage = 'Elephant_toColor2.jpg';
+% 
+% img = imread(originalImage);
+% 
+% figure
+% imshow(img)
+% 
+% [fimg, flabels, modes, regsize, grad, conf] = edison_wrapper(img,@RGB2Luv,...
+%        'SpatialBandWidth',8,'RangeBandWidth',4,...
+%        'MinimumRegionArea',20000);
+% 
+% figure
+% imshow(Luv2RGB(fimg));
 
-img = imread(originalImage);
-
-figure
-imshow(img)
-
-[fimg, flabels, modes, regsize, grad, conf] = edison_wrapper(img,@RGB2Luv,...
-       'SpatialBandWidth',8,'RangeBandWidth',4,...
-       'MinimumRegionArea',10000);
-
-figure
-imshow(Luv2RGB(fimg));
+load('Reference');
 
 flabels = double(flabels);
 
@@ -23,24 +25,24 @@ g = gx.^2+gy.^2;
 segmentation = g>0;
 segmentation = imdilate(segmentation,strel('square', 3));
 
-imgSeg = img;
+imgSeg = ref_img;
 
 imgSeg(1:end-1,1:end-1,1) = imgSeg(1:end-1,1:end-1,1) + uint8(255*(segmentation));
 
 figure
 imshow(imgSeg)
 
-gr = rgb2gray(img);
+gr = rgb2gray(ref_img);
 tic;
 imgFeatures = get_features(gr);
 toc
 
-NTrees = 1;
+NTrees = 200;
 [RF, knn] = createRF( imgFeatures, flabels, NTrees);
 
 %TEST ON GRAY IMAGE
-
-imgTest = imread('Elephant_ref.jpg');
+aaaaaaa = 1
+imgTest = imread('Elephant_toColor.jpg');
 imgTest = rgb2gray(imgTest);
 figure;
 imshow(imgTest)
@@ -56,11 +58,12 @@ toc
 % toc
 
 Yresized = reshape(Y,size(imgTest));
-Yimg = zeros(size(fimg));
+Yimg = zeros([size(imgTest,1) size(imgTest,2) 3]);
 
 for i =1:size(imgTest,1)
    for j = 1:size(imgTest,2)
-       Yimg(i,j, :) = modes(:,str2num(Yresized{i,j})+1);
+       %Yimg(i,j, :) = modes(:,str2num(Yresized{i,j})+1);
+       Yimg(i,j, :) = modes(:,Yresized(i,j)+1);
    end
 end
 
@@ -68,7 +71,7 @@ end
 figure
 imshow(Luv2RGB(Yimg));
 
-
+% 
 % Yresized = reshape(Yknn,size(imgTest));
 % Yimg = zeros(size(fimg));
 % 

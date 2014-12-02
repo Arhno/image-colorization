@@ -7,14 +7,15 @@ labels = labels(:);
 featuresSubSample = featureVector(1:1:end, :);
 labelsSubSample = labels(1:1:end);
 
-RF = TreeBagger(NTrees, featuresSubSample, labelsSubSample,'OOBPred','On',  'NPrint', 1);
-
+%RF = TreeBagger(NTrees, featuresSubSample, labelsSubSample,'OOBPred','On',  'NPrint', 1);
+%RF = ClassificationTree.fit(featuresSubSample, labelsSubSample);
+RF = fitensemble(featuresSubSample, labelsSubSample, 'AdaBoostM2',NTrees,'Tree');
 knn = ClassificationKNN.fit(featuresSubSample,labelsSubSample,'NumNeighbors', 11);
-
-oobErrorBaggedEnsemble = oobError(RF);
-plot(oobErrorBaggedEnsemble)
-xlabel 'Number of grown trees';
-ylabel 'Out-of-bag classification error';
+% figure
+% oobErrorBaggedEnsemble = oobError(RF);
+% plot(oobErrorBaggedEnsemble)
+% xlabel 'Number of grown trees';
+% ylabel 'Out-of-bag classification error';
 
 end
 
