@@ -14,7 +14,7 @@ clc ; close all ; clear ;
 % figure
 % imshow(Luv2RGB(fimg));
 
-load('Reference');
+load('ReferenceGerman');
 
 flabels = double(flabels);
 
@@ -38,11 +38,39 @@ imgFeatures = get_features(gr);
 toc
 
 NTrees = 200;
-[RF, knn] = createRF( imgFeatures, flabels, NTrees);
+[RF, knn, V] = createRF( imgFeatures, flabels, NTrees);
+
+featureToPlot = reshape(imgFeatures,[],size(imgFeatures,3),1);
+classes = flabels(:);
+[classes, c_order] = sort(classes);
+featureToPlot = featureToPlot(c_order,:);
+cur_class = 1;
+for k=2:length(classes);
+    if classes(k)>classes(k-1)
+        classes(k-1) = cur_class;
+        cur_class = cur_class+1;
+    else
+        classes(k-1) = cur_class;
+    end
+end
+classes(end) = cur_class;
+
+%test with PCA
+[~,~,V2] = svd(cov(featureToPlot));
+V2 = V2(:,1:2);
+
+featureToPlot = featureToPlot*V2;
+
+figure
+color = {'rx', 'bx', 'gx', 'kx', 'yx', 'cx'};
+for k=1:max(classes)
+    hold on
+    plot(featureToPlot(classes==k,1), featureToPlot(classes==k,2), color{k});
+end
 
 %TEST ON GRAY IMAGE
 aaaaaaa = 1
-imgTest = imread('Elephant_toColor.jpg');
+imgTest = imread('german_shepherd_1.jpg');
 imgTest = rgb2gray(imgTest);
 figure;
 imshow(imgTest)
@@ -51,7 +79,7 @@ title('image to be colorized')
 imgFeaturesTest = get_features(imgTest);
 
 tic;
-Y = testRF( RF, imgFeaturesTest );
+Y = testRF( RF, imgFeaturesTest, V );
 toc
 % tic
 % Yknn = testKnn( knn, imgFeaturesTest );
@@ -62,8 +90,8 @@ Yimg = zeros([size(imgTest,1) size(imgTest,2) 3]);
 
 for i =1:size(imgTest,1)
    for j = 1:size(imgTest,2)
-       %Yimg(i,j, :) = modes(:,str2num(Yresized{i,j})+1);
-       Yimg(i,j, :) = modes(:,Yresized(i,j)+1);
+       Yimg(i,j, :) = modes(:,str2num(Yresized{i,j})+1);
+       %Yimg(i,j, :) = modes(:,Yresized(i,j)+1);
    end
 end
 

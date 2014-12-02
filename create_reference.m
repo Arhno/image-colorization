@@ -1,6 +1,6 @@
 clc ; close all ; clear ;
 
-originalImage = 'Elephant_toColor.jpg';
+originalImage = 'german_shepherd_2.jpg';
 
 ref_img = imread(originalImage);
 
@@ -46,4 +46,4 @@ while again
     again = strcmp(choice,'Yes');
 end
 
-save('Reference', 'ref_img', 'flabels', 'modes');
+save('ReferenceGerman', 'ref_img', 'flabels', 'modes');
