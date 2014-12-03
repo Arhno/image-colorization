@@ -1,5 +1,5 @@
 %Just have to call colorization(Yresized,modes) after the main has been
-%executed and change the two images.
+%executed and change the two images.img is the reference image and img2 is the grayscale image.
 
 function [] = colorization(Yresized, modes)
     
